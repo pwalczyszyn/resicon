@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+					   xmlns:s="library://ns.adobe.com/flex/spark"
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   width="250" height="210"
+					   applicationComplete="windowedApplication_applicationCompleteHandler(event)"
+					   nativeDragEnter="windowedApplication_nativeDragEnterHandler(event)"
+					   nativeDragDrop="windowedApplication_nativeDragDropHandler(event)">
+
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			import mx.graphics.codec.PNGEncoder;
+			
+			protected var loadedImage:LoaderInfo;
+			
+			protected function windowedApplication_applicationCompleteHandler(event:FlexEvent):void
+			{
+				nativeWindow.x = (Capabilities.screenResolutionX - nativeWindow.width) / 2; 
+				nativeWindow.y = (Capabilities.screenResolutionY - nativeWindow.height) / 2; 
+			}
+
+			protected function imgIcon_clickHandler(event:MouseEvent):void
+			{
+				var file:File = File.desktopDirectory;
+				file.addEventListener(Event.SELECT, 
+					function(event:Event):void
+					{
+						loadImage(File(event.currentTarget));
+					});
+				file.browseForOpen("Select file to resize...", [new FileFilter("PNG", "png")]);
+			}
+
+			protected function windowedApplication_nativeDragEnterHandler(event:NativeDragEvent):void
+			{
+				var data:Array = event.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
+				if (data && data.length == 1)
+					NativeDragManager.acceptDragDrop(this);
+			}
+			
+			protected function windowedApplication_nativeDragDropHandler(event:NativeDragEvent):void
+			{
+				var data:Array = event.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
+				if (data && data.length == 1)
+					loadImage(data[0]);
+			}
+			
+			protected function loadImage(file:File):void
+			{
+				var loader:Loader = new Loader;
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loader_completeHandler);
+				loader.load(new URLRequest(file.url));
+			}
+
+			protected function loader_completeHandler(event:Event):void
+			{
+				loadedImage = LoaderInfo(event.currentTarget);
+				
+				var matrix:Matrix = new Matrix;
+				matrix.scale(128 / loadedImage.width, 128 / loadedImage.height);
+				var bd:BitmapData = new BitmapData(128, 128, true, 0);
+				bd.draw(loadedImage.loader, matrix);
+				imgIcon.source = bd;
+				
+				btnResize.enabled = true;
+			}
+
+			protected function btnResize_clickHandler(event:MouseEvent):void
+			{
+				if (loadedImage)
+				{
+					var outputDir:File = File.desktopDirectory;
+					outputDir.addEventListener(Event.SELECT, outputDir_selectHandler);
+					outputDir.browseForDirectory("Select output directory...");
+				}
+			}
+
+			protected function outputDir_selectHandler(event:Event):void
+			{
+				statusText.text = "Resizing...";
+				
+				var outputDir:File = File(event.currentTarget);
+				for(var i:int = 0; i < grpDimensions.numElements; i++)
+				{
+					var chk:CheckBox = grpDimensions.getElementAt(i) as CheckBox;
+					if (chk && chk.selected)
+					{
+						var dims:Array = chk.label.split("x");
+						createNewIcon(parseInt(dims[0]), parseInt(dims[1]), outputDir);
+					}
+				}
+				
+				var newWidth:int = parseInt(txtNewWidth.text);
+				var newHeight:int = parseInt(txtNewHeight.text);
+				if (newWidth > 0 && newHeight > 0)
+					createNewIcon(newWidth, newHeight, outputDir);
+				
+				statusText.text = "Resizing complete!";
+				
+				outputDir.openWithDefaultApplication();
+			}
+
+			protected function createNewIcon(newWidth:int, newHeight:int, outputDir:File):void
+			{
+				var matrix:Matrix = new Matrix;
+				matrix.scale(newWidth / loadedImage.width, newHeight / loadedImage.height);
+				
+				var bd:BitmapData = new BitmapData(newWidth, newHeight, true, 0);
+				bd.draw(loadedImage.loader, matrix);
+				
+				var file:File = outputDir.resolvePath("icon_" + (newWidth < 100 ? "0" : "") + newWidth + ".png");
+				var output:FileStream = new FileStream;
+				output.open(file, FileMode.WRITE);
+				output.writeBytes((new PNGEncoder).encode(bd));
+				output.close();
+			}
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:Image id="imgIcon" source="@Embed(source='/assets/ic_no_selection.png')"
+			 click="imgIcon_clickHandler(event)"
+			 left="10" top="10" width="128" height="128"/>
+	
+	<s:VGroup id="grpDimensions" right="10" top="10" width="94">
+		<s:CheckBox label="16x16" selected="true" />
+		<s:CheckBox label="32x32" selected="true" />
+		<s:CheckBox label="36x36" selected="true" />
+		<s:CheckBox label="48x48" selected="true" />
+		<s:CheckBox label="72x72" selected="true" />
+		<s:CheckBox label="128x128" selected="true" />
+		<s:HGroup verticalAlign="middle">
+			<s:TextInput id="txtNewWidth" text="0" width="35" />
+			<s:Label text="x" />
+			<s:TextInput id="txtNewHeight" text="0" width="35" />
+		</s:HGroup>
+	</s:VGroup>
+	
+	<s:Button id="btnResize" enabled="false" left="9" bottom="9" width="128" height="30" label="Resize"
+			  click="btnResize_clickHandler(event)"/>
+
+</s:WindowedApplication>
