@@ -9,15 +9,30 @@
 
 	<fx:Script>
 		<![CDATA[
+			import air.update.ApplicationUpdaterUI;
+			import air.update.events.UpdateEvent;
+			
 			import mx.events.FlexEvent;
 			import mx.graphics.codec.PNGEncoder;
 			
 			protected var loadedImage:LoaderInfo;
 			
+			protected var updater:ApplicationUpdaterUI;
+			
 			protected function windowedApplication_applicationCompleteHandler(event:FlexEvent):void
 			{
 				nativeWindow.x = (Capabilities.screenResolutionX - nativeWindow.width) / 2; 
-				nativeWindow.y = (Capabilities.screenResolutionY - nativeWindow.height) / 2; 
+				nativeWindow.y = (Capabilities.screenResolutionY - nativeWindow.height) / 2;
+				
+				updater = new ApplicationUpdaterUI;
+				updater.addEventListener(UpdateEvent.INITIALIZED, updater_initializedHandler);
+				updater.configurationFile = new File("app:/assets/updatesConfig.xml");
+				updater.initialize();
+			}
+
+			protected function updater_initializedHandler(event:UpdateEvent):void
+			{
+				updater.checkNow();
 			}
 
 			protected function imgIcon_clickHandler(event:MouseEvent):void

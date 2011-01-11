@@ -24,8 +24,10 @@
     <buildTarget buildTargetName="default">
       <airSettings airCertificatePath="/Users/pwalczys/Projects/cert/piotr.walczyszyn.p12" airTimestamp="false" version="1">
         <airExcludes>
-          <pathEntry path="assets/icons/.DS_Store"/>
           <pathEntry path=".DS_Store"/>
+          <pathEntry path="assets/.DS_Store"/>
+          <pathEntry path="assets/update.xml"/>
+          <pathEntry path="assets/icons/.DS_Store"/>
         </airExcludes>
       </airSettings>
       <actionScriptSettings version="1"/>
