@@ -26,7 +26,6 @@
         <airExcludes>
           <pathEntry path=".DS_Store"/>
           <pathEntry path="assets/.DS_Store"/>
-          <pathEntry path="assets/update.xml"/>
           <pathEntry path="assets/icons/.DS_Store"/>
         </airExcludes>
       </airSettings>

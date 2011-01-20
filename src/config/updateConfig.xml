@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration
 	xmlns="http://ns.adobe.com/air/framework/update/configuration/1.0">
-	<url>http://riaspace.com/resicon/downloads/update.xml</url>
-	<delay>0</delay>
+	<url>http://apprepo.adobe.com/apprepo/201011/updates/com.riaspace.Resicon/update.xml?version=2.5</url>
+	<delay>1</delay>
 	<defaultUI>
 		<dialog name="checkForUpdate" visible="false" />
 		<dialog name="downloadUpdate" visible="true" />

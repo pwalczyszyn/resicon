@@ -1,38 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+	Copyright 2011 Piotr Walczyszyn (http://riaspace.com)
+
+	This file is part of Resicon.
+
+	Resicon is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	Resicon is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with Resicon.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
 <s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
 					   xmlns:s="library://ns.adobe.com/flex/spark"
 					   xmlns:mx="library://ns.adobe.com/flex/mx"
 					   width="250" height="210"
+					   creationComplete="windowedApplication_creationCompleteHandler(event)"
 					   applicationComplete="windowedApplication_applicationCompleteHandler(event)"
 					   nativeDragEnter="windowedApplication_nativeDragEnterHandler(event)"
 					   nativeDragDrop="windowedApplication_nativeDragDropHandler(event)">
 
 	<fx:Script>
 		<![CDATA[
-			import air.update.ApplicationUpdaterUI;
-			import air.update.events.UpdateEvent;
+			import com.adobe.licensing.LicenseManager;
 			
 			import mx.events.FlexEvent;
 			import mx.graphics.codec.PNGEncoder;
 			
 			protected var loadedImage:LoaderInfo;
 			
-			protected var updater:ApplicationUpdaterUI;
+			private static const MY_APPLICATION_KEY:String = "DA6AA868-D18F-605B-8D99-42F590B95F0D";
+
+			private static var UPDATE_MODE:Boolean = true;
+			
+			private static var DEBUG_MODE:Boolean = false;
+			
+			protected function windowedApplication_creationCompleteHandler(event:FlexEvent):void
+			{
+				var licenseManager:LicenseManager = new LicenseManager();
+				licenseManager.checkLicense(this, MY_APPLICATION_KEY, UPDATE_MODE, DEBUG_MODE);
+			}
 			
 			protected function windowedApplication_applicationCompleteHandler(event:FlexEvent):void
 			{
 				nativeWindow.x = (Capabilities.screenResolutionX - nativeWindow.width) / 2; 
 				nativeWindow.y = (Capabilities.screenResolutionY - nativeWindow.height) / 2;
-				
-				updater = new ApplicationUpdaterUI;
-				updater.addEventListener(UpdateEvent.INITIALIZED, updater_initializedHandler);
-				updater.configurationFile = new File("app:/assets/updatesConfig.xml");
-				updater.initialize();
-			}
-
-			protected function updater_initializedHandler(event:UpdateEvent):void
-			{
-				updater.checkNow();
 			}
 
 			protected function imgIcon_clickHandler(event:MouseEvent):void
